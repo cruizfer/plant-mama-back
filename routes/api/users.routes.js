@@ -1,11 +1,22 @@
 const router = require('express').Router();
 const usersModel = require('../../models/users.model');
+const postModel = require('../../models/posts.model');
 const bcrypt = require('bcryptjs');
+const utils = require('../../helpers/utils');
+const { checkToken } = require('../../helpers/middlewares');
 
-router.post('/signin', async (req, res) => {
-    console.log(req.body)
+
+//SIGN-IN
+router.post('/sign-in', async (req, res) => {
+    console.log(req.body);
+
+    //Hashing password
+    const hash = bcrypt.hashSync(req.body.password, 10);
+    req.body.password = hash;
+    console.log(hash);
+
+    //Creating new user
     try {
-
         const [user] = await usersModel.create(req.body)
         res.json(user)
     } catch (error) {
@@ -14,7 +25,8 @@ router.post('/signin', async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res) => {
+//LOG-IN
+router.post('/log-in', async (req, res) => {
 
     // Considering invalid email and/or password
     const [result] = await usersModel.getByNickname(req.body.nickname)
@@ -30,11 +42,32 @@ router.post('/login', async (req, res) => {
     if (!validation) {
         return res.json({ error: 'invalid nickname and/or password' })
     } else {
-        return res.json({ success: 'valid nickname' });
+        return res.json({
+            success: 'valid nickname',
+            token: utils.generateToken(user)
+
+        });
     };
 
+});
+
+//FEED
+router.get('/feed', async (req, res) => {
+    try {
+        const [feed] = await postModel.getAll();
+        res.json(feed);
+    } catch (error) {
+        res.json(error)
+    }
 
 });
+
+//PERSONAL PROFILE
+router.get('/profile', checkToken, (req, res) => {
+    res.json(req.user);
+});
+
+
 
 
 module.exports = router;
