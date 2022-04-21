@@ -13,7 +13,7 @@ const getPostByID = (id) => {
 };
 
 const getPostsByUser = (user_id) => {
-    return db.query('select * from posts_users where user_id = ?', [user_id])
+    return db.query('select * from posts_users pu, posts p where pu.user_id = ? and pu.post_id = p.id;', [user_id])
 }
 
 
