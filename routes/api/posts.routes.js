@@ -1,8 +1,7 @@
 const router = require('express').Router();
-const usersModel = require('../../models/users.model');
 const postModel = require('../../models/posts.model');
 const { checkToken } = require('../../helpers/middlewares');
-const res = require('express/lib/response');
+
 
 
 
@@ -18,7 +17,6 @@ router.post('/saved', checkToken, async (req, res) => {
 });
 
 //GET POST BY ID
-
 router.get('/id', checkToken, async (req, res) => {
     try {
         const [posts] = await postModel.getPostByID(req.body.id);
@@ -28,8 +26,17 @@ router.get('/id', checkToken, async (req, res) => {
     }
 })
 
-//GET SELECTED POST BY USER
+//GET POST BY EXPERTISE LEVEL
+router.get('/by-expertise', checkToken, async (req, res) => {
+    try {
+        const [posts] = await postModel.getPostsByExpertise(req.user.expertise);
+        res.json(posts);
+    } catch (error) {
+        res.json(error)
+    }
+})
 
+//GET SELECTED POST BY USER
 router.get('/bookmark', checkToken, async (req, res) => {
     try {
         const [bookmark] = await postModel.getPostsByUser(req.user.id);
@@ -39,6 +46,18 @@ router.get('/bookmark', checkToken, async (req, res) => {
     }
 
 });
+
+//DELETE POST
+router.delete('/delete-post/:postId', async (req, res) => {
+    try {
+        const [result] = await postModel.deletePost(req.params.postId);
+        res.json(result);
+    } catch (error) {
+        res.json(error);
+    }
+
+});
+
 
 
 module.exports = router;
